@@ -4,6 +4,7 @@ services:
       context: ..
       dockerfile: docker/Dockerfile
       target: dev
+    image: wild_nav:00
     stdin_open: true
     tty: true
     network_mode: "host"

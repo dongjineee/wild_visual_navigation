@@ -1,7 +1,7 @@
 #####################
 # Base image #
 #####################
-FROM nvidia/cuda:12.3.2-runtime-ubuntu20.04 as base
+FROM nvidia/cuda:12.1.0-devel-ubuntu20.04 as base
 
 # Labels
 LABEL maintainer="Matias Mattamala;Jonas Frey"

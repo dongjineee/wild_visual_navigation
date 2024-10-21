@@ -74,7 +74,7 @@ if __name__ == "__main__":
     robot_state_pub = rospy.Publisher("/wild_visual_navigation_node/robot_state", RobotState, queue_size=20)
 
     # And also the twist command from teleoperation
-    ref_twist_sub = rospy.Subscriber("/jackal_velocity_controller/cmd_vel", Twist, twist_msg_callback, queue_size=20)
+    ref_twist_sub = rospy.Subscriber("/cmd_vel", Twist, twist_msg_callback, queue_size=20)
     ref_twiststamped_pub = rospy.Publisher("/wild_visual_navigation_node/reference_twist", TwistStamped, queue_size=20)
 
     rospy.loginfo("[jackal_state_converter_node] ready")
