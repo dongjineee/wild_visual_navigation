@@ -93,6 +93,7 @@ class FeatureExtractor:
             pass
 
     def extract(self, img, **kwargs):
+        # print(f"************************Segmentation Type: {self._segmentation_type}, Feature Type: {self._feature_type}************************")
         if self._segmentation_type == "random":
             dense_feat = self.compute_features(img, None, None, **kwargs)
 

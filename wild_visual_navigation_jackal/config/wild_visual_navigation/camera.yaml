@@ -1,7 +1,9 @@
 camera_topics:
   front:
-    image_topic: "/realsense/color/image_raw"
-    info_topic: "/realsense/color/camera_info"
+    # image_topic: "/realsense/color/image_raw"
+    # info_topic: "/realsense/color/camera_info"
+    image_topic: "/camera/color/image_raw"
+    info_topic: "/camera/color/camera_info"
     use_for_training: true
     publish_confidence: true
     publish_input_image: true

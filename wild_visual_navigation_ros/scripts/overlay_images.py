@@ -30,7 +30,8 @@ class ImageOverlayNode:
         torch_trav = rc.ros_image_to_torch(trav_msgs, device="cpu", desired_encoding="passthrough")
         img_out = self._visualizer.plot_detectron_classification(torch_image, torch_trav.clip(0, 1))
         ros_msg = rc.numpy_to_ros_image(img_out)
-        ros_msg.header.stamp = image_msg.header.stamp
+        # ros_msg.header.stamp = image_msg.header.stamp
+        ros_msg.header.stamp = rospy.Time.now()
         self._pub.publish(ros_msg)
 
 

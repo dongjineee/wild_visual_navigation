@@ -1,0 +1,137 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro" name="scout_mount">
+    <xacro:macro name="profile_4040_macro" params="prefix origin_x origin_y origin_z">
+        <link name="${prefix}_link">
+            <visual>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <box size="0.04 0.04 0.3"/>
+                </geometry>
+                <material name="gray">
+                    <color rgba="0.5 0.5 0.5 1"/>
+                </material>
+            </visual>
+            <collision>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <box size="0.04 0.04 0.3"/>
+                </geometry>
+            </collision>
+        </link>
+
+        <joint name="${prefix}_joint" type="fixed">
+            <origin xyz="${origin_x} ${origin_y} ${origin_z}" rpy="0 0 0" />
+            <parent link="sensor_mount" />
+            <child link="${prefix}_link" />
+        </joint>
+    </xacro:macro>
+
+    <xacro:macro name="sensor_mount" params="prefix base_x base_y base_z">
+
+        <link name="sensor_mount">
+            <visual>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <box size="0.65 0.27 0.015"/>
+                </geometry>
+                <material name="gray">
+                    <color rgba="0.5 0.5 0.5 1"/>
+                </material>
+            </visual>
+            <collision>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <box size="0.04 0.04 0.3"/>
+                </geometry>
+            </collision>
+        </link>
+
+
+        <joint name="temp_joint" type="fixed">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <parent link="base_link" />
+            <child link="sensor_mount" />
+        </joint>
+    
+        <!-- Profile 4040 Links and Joints -->
+        <xacro:profile_4040_macro prefix="${prefix}_profile_4040_1_left" origin_x="${base_x - 0.06}" origin_y="${base_y + 0.115}" origin_z="${base_z + 0.1575}"/>
+        <xacro:profile_4040_macro prefix="${prefix}_profile_4040_2_left" origin_x="${base_x + 0.06}" origin_y="${base_y + 0.115}" origin_z="${base_z + 0.1575}"/>
+        <xacro:profile_4040_macro prefix="${prefix}_profile_4040_1_right" origin_x="${base_x + 0.06}" origin_y="${base_y - 0.115}" origin_z="${base_z + 0.1575}"/>
+        <xacro:profile_4040_macro prefix="${prefix}_profile_4040_2_right" origin_x="${base_x - 0.06}" origin_y="${base_y - 0.115}" origin_z="${base_z + 0.1575}"/>
+
+        <link name="${prefix}_base_upper">
+            <visual>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <box size="0.47 0.27 0.04"/>
+                </geometry>
+                <material name="gray">
+                    <color rgba="0.5 0.5 0.5 1"/>
+                </material>
+            </visual>
+            <collision>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <box size="0.04 0.04 0.3"/>
+                </geometry>
+            </collision>
+        </link>
+
+        <joint name="${prefix}_base_upper_joint" type="fixed">
+            <origin xyz="${base_x+0.115} ${base_y} ${base_z+0.3275}" rpy="0 0 0" />
+            <parent link="sensor_mount" />
+            <child link="${prefix}_base_upper" />
+        </joint>
+        
+        <!-- lidar_link --> 
+        <link name="lidar_base">
+            <visual> 
+            <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="package://scout_description/meshes/livox_mid-360-90x.dae">
+                </mesh>
+            </geometry>
+            </visual>
+    
+            <collision>
+                <origin xyz="0 0 0" rpy="0 0 0" /> <geometry> <mesh 
+                filename="package://scout_description/meshes/livox_mid-360-90x.dae"> 
+                </mesh> </geometry>
+            </collision>
+        </link>
+        
+        <joint name="lidar_to_lidar_base_joint" type="fixed">
+            <parent link="${prefix}_base_upper"/>
+            <child link="lidar_base"/>
+            <origin rpy="0 0 3.14" xyz="0.215 0.0 0.046"/>
+        </joint>
+
+        <joint name="lidar_optical" type="fixed">
+            <origin xyz="0 0 0" rpy="0 0 3.14" />
+            <parent link="lidar_base" />
+            <child link="lidar_lidar_optical" />
+          </joint>
+        <link name="lidar_lidar_optical"/>
+
+
+        <!-- camera_link -->   
+        
+        <joint name="camera_joint_1" type="fixed">
+            <parent link="${prefix}_base_upper"/>
+            <child link="camera_base"/>
+            <origin rpy="0 0 0" xyz="0.215 0.0 -0.066"/>
+        </joint>
+
+        <xacro:arg name="use_nominal_extrinsics" default="true"/>
+        <xacro:include filename="$(find scout_description)/urdf/_d455.urdf.xacro" />
+        
+        <link name="camera_base" />
+        <xacro:sensor_d455 parent="camera_base" use_nominal_extrinsics="$(arg use_nominal_extrinsics)">
+          <origin xyz="0 0 0" rpy="0 0 0"/>
+        </xacro:sensor_d455>
+        
+    </xacro:macro>
+
+
+
+</robot>

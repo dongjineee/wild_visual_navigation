@@ -4,20 +4,39 @@
 # All rights reserved. Licensed under the MIT license.
 # See LICENSE file in the project root for details.
 #
-from geometry_msgs.msg import Twist, TwistStamped
+from geometry_msgs.msg import Twist, TwistStamped, TransformStamped
 from nav_msgs.msg import Odometry
 from wild_visual_navigation_msgs.msg import RobotState, CustomState
 import rospy
-
+import tf2_ros
 
 def jackal_msg_callback(jackal_state, return_msg=False):
+
     robot_state_msg = RobotState()
 
     # For RobotState msg
     robot_state_msg.header = jackal_state.header
 
+    transform = TransformStamped()
+    transform.header.stamp = rospy.Time.now()
+    transform.header.frame_id = "odom"
+    transform.child_frame_id = "base_link"
+
+    transform.transform.translation.x = jackal_state.pose.pose.position.x
+    transform.transform.translation.y = jackal_state.pose.pose.position.y
+    transform.transform.translation.z = jackal_state.pose.pose.position.z
+
+    # Set rotation (orientation)
+    transform.transform.rotation = jackal_state.pose.pose.orientation
+
+    # Broadcast the transform
+    br.sendTransform(transform)
+
+    
     # Extract pose
     robot_state_msg.pose.header = jackal_state.header
+    robot_state_msg.pose.header.frame_id = "base_link"
+    robot_state_msg.pose.header.stamp = rospy.Time.now()
     robot_state_msg.pose.pose = jackal_state.pose.pose
 
     # Extract twist
@@ -47,6 +66,8 @@ def jackal_msg_callback(jackal_state, return_msg=False):
     robot_state_msg.states[0].values[11] = robot_state_msg.twist.twist.angular.y
     robot_state_msg.states[0].values[12] = robot_state_msg.twist.twist.angular.z
 
+    # print(robot_state_msg.pose.pose.position.x, "  ", robot_state_msg.pose.pose.position.y, "  ", robot_state_msg.pose.pose.position.z)
+    # print(jackal_state.header, " ", jackal_state.child_frame_id)
     for i, x in enumerate(["tx", "ty", "tz", "qx", "qy", "qz", "qw", "vx", "vy", "vz", "wx", "wy", "wz"]):
         robot_state_msg.states[0].labels[i] = x
 
@@ -69,8 +90,11 @@ def twist_msg_callback(msg):
 if __name__ == "__main__":
     rospy.init_node("jackal_state_converter_node")
 
+    br = tf2_ros.TransformBroadcaster()
     # We subscribe the odometry topic (state)
-    jackal_state_sub = rospy.Subscriber("/odometry/filtered", Odometry, jackal_msg_callback, queue_size=20)
+    # jackal_state_sub = rospy.Subscriber("/odometry/filtered", Odometry, jackal_msg_callback, queue_size=20)
+    jackal_state_sub = rospy.Subscriber("/odom", Odometry, jackal_msg_callback, queue_size=20)
+    
     robot_state_pub = rospy.Publisher("/wild_visual_navigation_node/robot_state", RobotState, queue_size=20)
 
     # And also the twist command from teleoperation

@@ -20,9 +20,12 @@
   </node>
 
   <node name="wvn_feature_extractor_node" pkg="wild_visual_navigation_ros" type="wvn_feature_extractor_node.py" output="screen">
+  <!-- <node name="wvn_feature_extractor_node" pkg="wild_visual_navigation_ros" type="wvn_feature_extractor_node.py"> -->
     <param name="reload_default_params" value="False" />
   </node>
 
   <!-- Nice visualization overlay for front image only-->
   <include if="$(arg overlay_images)" file="$(find wild_visual_navigation_ros)/launch/overlay_images.launch"/> 
+  <!-- <node pkg="tf2_ros" type="static_transform_publisher" name="camera_to_base" args="0 0 0 0.71 0 0 base_link camera_color_optical_frame" /> -->
+  <!-- <node pkg="tf2_ros" type="static_transform_publisher" name="odom_to_base" args="0 0 0 0.0 0 0 odom base_link" />   -->
 </launch>

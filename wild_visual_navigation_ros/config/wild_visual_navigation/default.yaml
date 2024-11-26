@@ -19,8 +19,10 @@ image_graph_dist_thr: 0.2           # Minimum distance between mission nodes bei
 supervision_graph_dist_thr: 0.1     # Minimum distance between supervision nodes being added
 network_input_image_height: 224     # Unput image height
 network_input_image_width: 224      # Input image width
-segmentation_type: "stego"          # Options: slic, grid, random, stego
-feature_type: "stego"               # Options: dino, dinov2, stego
+# segmentation_type: "stego"          # Options: slic, grid, random, stego
+# feature_type: "stego"               # Options: dino, dinov2, stego
+segmentation_type: "slic"          # Options: slic, grid, random, stego
+feature_type: "dino"               # Options: dino, dinov2, stego
 dino_patch_size: 8                  # Options: 8, 16; We found 8 is sufficient and faster
 dino_backbone: vit_small            # Options: vit_small
 slic_num_components: 100            # Number of segments for slic

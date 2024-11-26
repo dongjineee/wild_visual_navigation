@@ -280,7 +280,8 @@ class WvnFeatureExtractor:
             cam (str): Camera name
         """
         # Check the rate
-        ts = image_msg.header.stamp.to_sec()
+        # ts = image_msg.header.stamp.to_sec()
+        ts = rospy.Time.now().to_sec()
         if abs(ts - self._last_image_ts[cam]) < 1.0 / self._ros_params.image_callback_rate:
             return
 
@@ -301,7 +302,8 @@ class WvnFeatureExtractor:
                 self._log_data[f"time_last_image_{cam}"] = rospy.get_time()
 
             # Update model from file if possible
-            self.load_model(image_msg.header.stamp)
+            # self.load_model(image_msg.header.stamp)
+            self.load_model(rospy.Time.now())
 
             # Convert image message to torch image
             torch_image = rc.ros_image_to_torch(image_msg, device=self._ros_params.device)
@@ -338,13 +340,19 @@ class WvnFeatureExtractor:
                 out_trav = trav.reshape(H, W, -1)[:, :, 0]
 
             msg = rc.numpy_to_ros_image(out_trav.cpu().numpy(), "passthrough")
-            msg.header = image_msg.header
+            # msg.header = image_msg.header
+            msg.header.stamp = rospy.Time.now()
+            msg.header.frame_id = image_msg.header.frame_id
+
             msg.width = out_trav.shape[0]
             msg.height = out_trav.shape[1]
             self._camera_handler[cam]["trav_pub"].publish(msg)
 
             msg = self._camera_handler[cam]["camera_info_msg_out"]
-            msg.header = image_msg.header
+            # msg.header = image_msg.header
+            msg.header.stamp = rospy.Time.now()
+            msg.header.frame_id = image_msg.header.frame_id
+
             self._camera_handler[cam]["info_pub"].publish(msg)
 
             # Publish image
@@ -353,7 +361,10 @@ class WvnFeatureExtractor:
                     (torch_image.permute(1, 2, 0) * 255).cpu().numpy().astype(np.uint8),
                     "rgb8",
                 )
-                msg.header = image_msg.header
+                # msg.header = image_msg.header
+                msg.header.stamp = rospy.Time.now()
+                msg.header.frame_id = image_msg.header.frame_id
+
                 msg.width = torch_image.shape[1]
                 msg.height = torch_image.shape[2]
                 self._camera_handler[cam]["input_pub"].publish(msg)
@@ -364,7 +375,10 @@ class WvnFeatureExtractor:
                 confidence = self._confidence_generator.inference_without_update(x=loss_reco)
                 out_confidence = confidence.reshape(H, W)
                 msg = rc.numpy_to_ros_image(out_confidence.cpu().numpy(), "passthrough")
-                msg.header = image_msg.header
+                # msg.header = image_msg.header
+                msg.header.stamp = rospy.Time.now()
+                msg.header.frame_id = image_msg.header.frame_id
+
                 msg.width = out_confidence.shape[0]
                 msg.height = out_confidence.shape[1]
                 self._camera_handler[cam]["conf_pub"].publish(msg)
@@ -372,9 +386,15 @@ class WvnFeatureExtractor:
             # Publish features and feature_segments
             if self._ros_params.camera_topics[cam]["use_for_training"]:
                 msg = ImageFeatures()
-                msg.header = image_msg.header
+                # msg.header = image_msg.header
+                msg.header.stamp = rospy.Time.now()
+                msg.header.frame_id = image_msg.header.frame_id
+
                 msg.feature_segments = rc.numpy_to_ros_image(seg.cpu().numpy().astype(np.int32), "passthrough")
-                msg.feature_segments.header = image_msg.header
+                # msg.feature_segments.header = image_msg.header
+                msg.feature_segments.header.stamp = rospy.Time.now()
+                msg.feature_segments.header.frame_id = image_msg.header.frame_id
+
                 feat_np = feat.cpu().numpy()
 
                 mad1 = MultiArrayDimension()
@@ -418,12 +438,24 @@ class WvnFeatureExtractor:
 
         # self._load_model_counter += 1
         # if self._load_model_counter % 10 == 0:
+
+        ################ select pt model file ################
+        
         p = join(WVN_ROOT_DIR, ".tmp_state_dict.pt")
-        # p = join(WVN_ROOT_DIR,"assets/checkpoints/mountain_bike_trail_fpr_0.25.pt")
+        # p = join(WVN_ROOT_DIR, "last_checkpoint.pt")
+        # p = join(WVN_ROOT_DIR,"mountain_bike_trail_v2.pt")
+        
+        ######################################################
 
         if os.path.exists(p):
             new_model_state_dict = torch.load(p)
             k = list(self._model.state_dict().keys())[-1]
+
+            # model_keys = list(self._model.state_dict().keys())
+            # new_model_keys = list(new_model_state_dict.keys())
+            # if set(model_keys) != set(new_model_keys):
+            #     rospy.logwarn(f"******[{self._node_name}] Model keys do not match. "
+            #                   f"Expected keys: {model_keys[:5]}... Got keys: {new_model_keys[:5]}...******")
 
             # check if the key is in state dict - this may be not the case if switched between models
             # assumption first key within state_dict is unique and sufficient to identify if a model has changed

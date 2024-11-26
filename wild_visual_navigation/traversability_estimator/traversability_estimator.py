@@ -455,6 +455,8 @@ class TraversabilityEstimator:
         if self._pause_training:
             return {}
 
+        # print("++++++++++++++++++++++++++++++++++++++Using model: ", type(self._model))    
+        # print("++++++++++++++++++++++++++++++++++++++Model structure:", self._model)
         num_valid_nodes = self._mission_graph.get_num_valid_nodes()
         return_dict = {"mission_graph_num_valid_node": num_valid_nodes}
         if num_valid_nodes > self._min_samples_for_training:
