@@ -1,0 +1,15 @@
+<launch>
+    <arg name="model" />
+    <arg name="gui"  default="False" />
+    <!-- Loading model files -->
+    <param  name="robot_description"  textfile="$(find wild_visual_navigation_real_world)/urdf/scout_v2.urdf" />
+    <param  name="use_gui"  value="$(arg gui)" />
+    <!-- Launch  the joint state publisher -->
+    <!-- <node  name="joint_state_publisher"  pkg="joint_state_publisher"  type="joint_state_publisher" /> -->
+    <!-- Launch  the robot state publisher -->
+    <node  name="robot_state_publisher"  pkg="robot_state_publisher"  type="robot_state_publisher" />
+    <!-- Loading rviz files -->
+    <node name="rviz"  pkg="rviz"  type="rviz"  args="-d $(find wild_visual_navigation_real_world)/rviz/scout_mini_model_display.rviz" />
+  </launch>
+
+

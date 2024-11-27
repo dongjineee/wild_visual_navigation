@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>wild_visual_navigation_real_world</name>
+  <version>0.0.1</version>
+  <description>Scout_real_world environment for wvn</description>
+  <maintainer email="d22g66@naver.com">Dongjin Cho</maintainer>
+  <author email="d22g66@naver.com">Dongjin Cho</author>
+
+  <license>Proprietary</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>rospy</depend>
+  <depend>nav_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>wild_visual_navigation_ros</depend>
+  <depend>urdf</depend>
+  <depend>xacro</depend>
+</package>
