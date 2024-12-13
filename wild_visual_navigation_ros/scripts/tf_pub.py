@@ -13,7 +13,7 @@ class DynamicTFBroadcaster:
         self.br = tf2_ros.TransformBroadcaster()
         
         # Subscriber for Odometry messages
-        self.odom_sub = rospy.Subscriber('/odom', Odometry, self.odom_callback)
+        self.odom_sub = rospy.Subscriber('/Odometry', Odometry, self.odom_callback)
 
     def odom_callback(self, msg):
         # Create a TransformStamped message

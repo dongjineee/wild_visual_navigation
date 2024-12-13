@@ -9,40 +9,82 @@ from nav_msgs.msg import Odometry
 from wild_visual_navigation_msgs.msg import RobotState, CustomState
 import rospy
 import tf2_ros
+import numpy as np
+import tf.transformations
 
-def jackal_msg_callback(jackal_state, return_msg=False):
+def jackal_msg_callback(robot_state, return_msg=False):
 
+    robot_state.pose.pose.position.x = robot_state.pose.pose.position.x - 0.3
+    robot_state.pose.pose.position.z = 0.3
     robot_state_msg = RobotState()
 
     # For RobotState msg
-    robot_state_msg.header = jackal_state.header
+    robot_state_msg.header = robot_state.header
 
     transform = TransformStamped()
     transform.header.stamp = rospy.Time.now()
     transform.header.frame_id = "odom"
     transform.child_frame_id = "base_link"
 
-    transform.transform.translation.x = jackal_state.pose.pose.position.x
-    transform.transform.translation.y = jackal_state.pose.pose.position.y
-    transform.transform.translation.z = jackal_state.pose.pose.position.z
+    transform.transform.translation.x = robot_state.pose.pose.position.x
+    transform.transform.translation.y = robot_state.pose.pose.position.y
+    transform.transform.translation.z = robot_state.pose.pose.position.z
 
     # Set rotation (orientation)
-    transform.transform.rotation = jackal_state.pose.pose.orientation
+    transform.transform.rotation = robot_state.pose.pose.orientation
 
-    # Broadcast the transform
+    # Broadcast the odom -> base_link transform
     br.sendTransform(transform)
 
+    # Add base_link -> camera_color_optical_frame transform
+    camera_transform = TransformStamped()
+    camera_transform.header.stamp = rospy.Time.now()
+    camera_transform.header.frame_id = "base_link"
+    camera_transform.child_frame_id = "camera_color_optical_frame"
+
+    # Camera transform matrix
+    # camera_matrix = np.array([
+    #     [0.0796631, 0.00164398, 0.99682, 0.115613],
+    #     [-0.996616, 0.0204396, 0.0796131, -0.194337],
+    #     [-0.0202437, -0.99979, 0.0032667, 0.122819],
+    #     [0, 0, 0, 1]
+    # ])
     
+    camera_matrix = np.array([
+        [0.00330765, 0.00592764, 0.999977, 0.50412],
+        [-0.999994, -0.000849364, 0.00331274, 0.0261041],
+        [0.000868981, -0.999982, 0.0059248, 0.2554703],
+        [0, 0, 0, 1]
+    ])
+
+    # Extract translation and rotation from matrix
+    translation = camera_matrix[:3, 3]
+    quaternion = tf.transformations.quaternion_from_matrix(camera_matrix)
+
+    # Set translation
+    camera_transform.transform.translation.x = translation[0]
+    camera_transform.transform.translation.y = translation[1]
+    camera_transform.transform.translation.z = translation[2]
+
+    # Set rotation
+    camera_transform.transform.rotation.x = quaternion[0]
+    camera_transform.transform.rotation.y = quaternion[1]
+    camera_transform.transform.rotation.z = quaternion[2]
+    camera_transform.transform.rotation.w = quaternion[3]
+
+    # Broadcast the base_link -> camera_color_optical_frame transform
+    br.sendTransform(camera_transform)
+
     # Extract pose
-    robot_state_msg.pose.header = jackal_state.header
+    robot_state_msg.pose.header = robot_state.header
     robot_state_msg.pose.header.frame_id = "base_link"
     robot_state_msg.pose.header.stamp = rospy.Time.now()
-    robot_state_msg.pose.pose = jackal_state.pose.pose
+    robot_state_msg.pose.pose = robot_state.pose.pose
 
     # Extract twist
-    robot_state_msg.twist.header = jackal_state.header
-    robot_state_msg.twist.header.frame_id = jackal_state.child_frame_id
-    robot_state_msg.twist.twist = jackal_state.twist.twist
+    robot_state_msg.twist.header = robot_state.header
+    robot_state_msg.twist.header.frame_id = robot_state.child_frame_id
+    robot_state_msg.twist.twist = robot_state.twist.twist
 
     vector_state = CustomState()
     vector_state.name = "vector_state"
@@ -66,8 +108,6 @@ def jackal_msg_callback(jackal_state, return_msg=False):
     robot_state_msg.states[0].values[11] = robot_state_msg.twist.twist.angular.y
     robot_state_msg.states[0].values[12] = robot_state_msg.twist.twist.angular.z
 
-    # print(robot_state_msg.pose.pose.position.x, "  ", robot_state_msg.pose.pose.position.y, "  ", robot_state_msg.pose.pose.position.z)
-    # print(jackal_state.header, " ", jackal_state.child_frame_id)
     for i, x in enumerate(["tx", "ty", "tz", "qx", "qy", "qz", "qw", "vx", "vy", "vz", "wx", "wy", "wz"]):
         robot_state_msg.states[0].labels[i] = x
 
@@ -92,8 +132,7 @@ if __name__ == "__main__":
 
     br = tf2_ros.TransformBroadcaster()
     # We subscribe the odometry topic (state)
-    # jackal_state_sub = rospy.Subscriber("/odom", Odometry, jackal_msg_callback, queue_size=20)
-    jackal_state_sub = rospy.Subscriber("/Odometry", Odometry, jackal_msg_callback, queue_size=20)
+    robot_state_sub = rospy.Subscriber("/Odometry", Odometry, jackal_msg_callback, queue_size=20)
 
     robot_state_pub = rospy.Publisher("/wild_visual_navigation_node/robot_state", RobotState, queue_size=20)
 

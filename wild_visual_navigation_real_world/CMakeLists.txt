@@ -23,4 +23,5 @@ install(DIRECTORY launch meshes urdf
 ############
 catkin_install_python(PROGRAMS
                                scripts/scout_state_converter_node.py
+                               scripts/robot_convert.py
                       DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})

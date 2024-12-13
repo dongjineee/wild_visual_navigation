@@ -1,9 +1,5 @@
 <launch>
 
-    <!-- scout_urdf_spawn -->
-    <param  name="robot_description"  textfile="$(find wild_visual_navigation_real_world)/urdf/scout_v2.urdf" />
-    <node  name="robot_state_publisher"  pkg="robot_state_publisher"  type="robot_state_publisher" />
-
     <!-- Arguments -->
     <arg name="camera_file"       default="$(find wild_visual_navigation_real_world)/config/wild_visual_navigation/camera.yaml"/>
     <arg name="params_file"       default="$(find wild_visual_navigation_real_world)/config/wild_visual_navigation/scout.yaml"/>
@@ -16,7 +12,7 @@
     </include>
 
       <!-- scout state converter required by WVN -->
-    <node name="scout_state_converter_node" pkg="wild_visual_navigation_real_world" type="scout_state_converter_node.py"/>
+    <node name="robot_convert" pkg="wild_visual_navigation_real_world" type="robot_convert.py"/>
     <!-- <node name="scout_fake_tf_pub" pkg="wild_visual_navigation_ros" type="tf_pub.py"/> -->
 
   </launch>
